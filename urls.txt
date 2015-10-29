@@ -1,0 +1,12 @@
+Events
+https://mods.usetopscore.com/api/events
+
+Teams in this event
+https://mods.usetopscore.com/api/teams?event_id=117788
+https://mods.usetopscore.com/api/teams?event_id=117788&page=3
+
+Fields for this event
+https://mods.usetopscore.com/api/fields?event_id=117788
+
+Upcoming games for my teams
+https://mods.usetopscore.com/api/games?order_by=start_date%20asc&team_id[]=121562&team_id[]=121226&min_date=2015-10-26
