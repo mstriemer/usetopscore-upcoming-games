@@ -7,11 +7,16 @@ function as_json(response) {
   return response.json();
 }
 
+function sorted(things) {
+  things.sort((a, b) => a.name > b.name ? 1 : -1);
+  return things;
+}
+
 function currentEvents() {
   return fetch(EVENTS_URL).then(as_json).then((response) => {
-    return Object.keys(response.result).map((eventId) => {
+    return sorted(Object.keys(response.result).map((eventId) => {
         return response.result[eventId];
-    });
+    }));
   });
 }
 
@@ -26,12 +31,10 @@ function teamsForEvent(eventId) {
       teamRequests.push(fetch(url + `&page=${i + 1}`).then(as_json));
     }
     return Promise.all(teamRequests).then((teamData) => {
-      let teams = teamData.reduce((all, response) => {
+      return sorted(teamData.reduce((all, response) => {
         let teams = response.result;
         return all.concat(Object.keys(teams).map((id) => teams[id]));
-      }, []);
-      teams.sort((a, b) => a.name > b.name ? 1 : -1);
-      return teams;
+      }, []));
     });
   });
 }
