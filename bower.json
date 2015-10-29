@@ -1,0 +1,20 @@
+{
+  "name": "usetopscore-upcoming-games",
+  "main": "index.js",
+  "version": "0.0.0",
+  "authors": [
+    "Mark Striemer"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "es6-promise": "~3.0.2",
+    "fetch": "~0.10.0"
+  }
+}
