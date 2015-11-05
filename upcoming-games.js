@@ -31,10 +31,12 @@ function teamsForEvent(eventId) {
       teamRequests.push(fetch(url + `&page=${i + 1}`).then(as_json));
     }
     return Promise.all(teamRequests).then((teamData) => {
-      return sorted(teamData.reduce((all, response) => {
+      let teams = sorted(teamData.reduce((all, response) => {
         let teams = response.result;
         return all.concat(Object.keys(teams).map((id) => teams[id]));
       }, []));
+      teams.forEach((team) => team.eventId = eventId);
+      return teams;
     });
   });
 }
@@ -56,17 +58,16 @@ function fieldInfo(eventId, fieldId) {
 }
 
 function createSelect({ id, options, changeHandler, selectedValue }) {
-  let select = document.getElementById(id);
-  if (!select) {
-    select = document.createElement('select');
-    select.id = id;
-    select.addEventListener('change', changeHandler);
-    document.body.appendChild(select);
+  let oldSelect = document.getElementById(id);
+  let select = document.createElement('select');
+  if (oldSelect) {
+    document.body.insertBefore(select, oldSelect);
+    document.body.removeChild(oldSelect);
   } else {
-    while (select.firstChild) {
-      select.removeChild(select.firstChild);
-    }
+    document.body.appendChild(select);
   }
+  select.id = id;
+  select.addEventListener('change', changeHandler);
   let option = document.createElement('option');
   option.disabled = true;
   option.selected = true;
@@ -84,46 +85,44 @@ function createSelect({ id, options, changeHandler, selectedValue }) {
   return select;
 }
 
-function showEvents() {
-  let selectedId = localStorage.getItem('selected-event');
+export function showEvents() {
   currentEvents().then((events) => {
     createSelect({
       id: 'event-selector',
       options: events,
       changeHandler: (e) => {
-        localStorage.setItem('selected-event', e.target.value);
         showTeamsFor(e.target.value);
       },
-      selectedValue: selectedId,
     });
   });
-  if (selectedId) {
-    showTeamsFor(selectedId);
-  }
 }
 
-
 function showTeamsFor(eventId) {
-  let selectedId = localStorage.getItem('selected-team');
   teamsForEvent(eventId).then((teams) => {
     let select = createSelect({
       id: 'team-selector',
       options: teams,
       changeHandler: (e) => {
-        localStorage.setItem('selected-team', e.target.value);
-        showNextGameFor(e.target.value,
-                        e.target.getAttribute('data-event-id'));
+        let teamId = e.target.value;
+        for (let team of teams) {
+          if (team.id == teamId) {
+            teamStore.dispatch({type: 'SELECT', team});
+            return;
+          }
+        }
       },
-      selectedValue: selectedId,
     });
     // Set this on the select so that it can be used in the handler. The
     // handler is only registered once so it would always get the event that
     // was set when it was first registered.
     select.setAttribute('data-event-id', eventId);
   });
-  if (selectedId) {
-    showNextGameFor(selectedId, eventId);
-  }
+}
+
+function nextGameFor({ id, eventId }) {
+  upcomingGamesForTeam(id).then((games) => {
+    return games[0];
+  });
 }
 
 function showNextGameFor(teamId, eventId) {
@@ -140,5 +139,3 @@ function showNextGameFor(teamId, eventId) {
     }
   });
 }
-
-showEvents();
