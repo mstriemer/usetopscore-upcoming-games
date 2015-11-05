@@ -20,8 +20,8 @@ function currentEvents() {
   });
 }
 
-function teamsForEvent(eventId) {
-  var url = TEAMS_URL + `?event_id=${eventId}`;
+function teamsForEvent(event) {
+  var url = TEAMS_URL + `?event_id=${event.id}`;
   return fetch(url).then(as_json).then((response) => {
     let perPage = Object.keys(response.result).length;
     let count = response.count;
@@ -35,7 +35,10 @@ function teamsForEvent(eventId) {
         let teams = response.result;
         return all.concat(Object.keys(teams).map((id) => teams[id]));
       }, []));
-      teams.forEach((team) => team.eventId = eventId);
+      teams.forEach((team) => {
+        team.eventId = event.id;
+        team.event = event;
+      });
       return teams;
     });
   });
@@ -87,55 +90,45 @@ function createSelect({ id, options, changeHandler, selectedValue }) {
 
 export function showEvents() {
   currentEvents().then((events) => {
+    let label = document.createElement('label');
+    label.textContent = 'Add a team: ';
+    document.body.appendChild(label);
     createSelect({
       id: 'event-selector',
       options: events,
       changeHandler: (e) => {
-        showTeamsFor(e.target.value);
+        let eventId = parseInt(e.target.value, 10);
+        for (let event of events) {
+          if (event.id === eventId) {
+            showTeamsFor(event);
+            return;
+          }
+        }
       },
     });
   });
 }
 
-function showTeamsFor(eventId) {
-  teamsForEvent(eventId).then((teams) => {
+function showTeamsFor(event) {
+  teamsForEvent(event).then((teams) => {
     let select = createSelect({
       id: 'team-selector',
       options: teams,
       changeHandler: (e) => {
-        let teamId = e.target.value;
+        let teamId = parseInt(e.target.value, 10);
         for (let team of teams) {
-          if (team.id == teamId) {
+          if (team.id === teamId) {
             teamStore.dispatch({type: 'SELECT', team});
             return;
           }
         }
       },
     });
-    // Set this on the select so that it can be used in the handler. The
-    // handler is only registered once so it would always get the event that
-    // was set when it was first registered.
-    select.setAttribute('data-event-id', eventId);
   });
 }
 
 function nextGameFor({ id, eventId }) {
   upcomingGamesForTeam(id).then((games) => {
     return games[0];
-  });
-}
-
-function showNextGameFor(teamId, eventId) {
-  upcomingGamesForTeam(teamId).then((games) => {
-    let game = games[0];
-    let el = document.getElementById('upcoming-games');
-    if (game) {
-      el.textContent = 'Loading field data...';
-      fieldInfo(eventId, game.field_id).then((field) => {
-        el.textContent = `Your next game is on ${game.start_date} at ${game.start_time} on ${field.name} - ${game.field_number}`;
-      });
-    } else {
-      el.textContent = 'You have no upcoming games.'
-    }
   });
 }

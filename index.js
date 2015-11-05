@@ -26,7 +26,7 @@ let UpcomingGame = {
     return <div id={`UpcomingGame-${team.id}`} class="upcoming-game">
       <div class="upcoming-game--team">
         <img src={team.images['40']} width="40" height="40" />
-        <h3>{team.name}</h3>
+        <h3 title={team.event.name}>{team.name}</h3>
         <button onClick={remove}>Remove</button>
       </div>
     </div>;
