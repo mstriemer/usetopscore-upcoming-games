@@ -2,12 +2,11 @@ import './bower_components/es6-promise/promise';
 import './bower_components/fetch/fetch';
 import element from 'virtual-element';
 import { render, tree } from 'deku';
-import { teamStore } from './stores';
-import { nextGameFor, showEvents } from './upcoming-games';
+import { teamStore, gameStore } from './stores';
+import { loadGames, nextGameFor, showEvents } from './upcoming-games';
 
 showEvents();
-
-window.teamStore = teamStore;
+loadGames();
 
 let TeamSelector = {
   render({ props, state }) {
@@ -35,8 +34,14 @@ let UpcomingGame = {
 
 let UpcomingGames = {
   render({ props, state }) {
-    let { teams } = props;
+    let { teams, games } = props;
+    let [game, ...otherGames] = games;
+    let gameInfo;
+    if (game) {
+      gameInfo = <p>Your next game is on {game.start_date} at {game.start_time} on field {game.field_id} {game.field_number}</p>;
+    }
     return <div>
+      {gameInfo}
       <p>You have {teams.length} teams selected.</p>
       {teams.map((team) => <UpcomingGame team={team} />)}
     </div>;
@@ -45,18 +50,20 @@ let UpcomingGames = {
 
 let App = {
   propTypes: {
+    games: {source: 'games'},
     teams: {source: 'teams'},
   },
   render({ props, state }) {
     return <div>
       <TeamSelector />
-      <UpcomingGames teams={props.teams} />
+      <UpcomingGames teams={props.teams} games={props.games} />
     </div>;
   }
 }
 
 let app = tree(<App />);
 
-app.use(teamStore.plugin)
+app.use(teamStore.plugin);
+app.use(gameStore.plugin);
 
 render(app, document.getElementById('app'));

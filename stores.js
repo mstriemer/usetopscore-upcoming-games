@@ -66,3 +66,14 @@ export let teamStore = createStore(teams, 'teams');
 teamStore.subscribe((teams) => {
   localStorage.setItem(TEAMS_STORAGE_KEY, JSON.stringify(teams));
 });
+
+function games(state=null, action) {
+  switch (action.type) {
+  case 'SET':
+    return action.games;
+  case 'INIT':
+    return [];
+  }
+}
+
+export let gameStore = createStore(games, 'games');

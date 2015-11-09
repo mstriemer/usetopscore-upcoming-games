@@ -1,7 +1,19 @@
+import { gameStore, teamStore } from './stores';
+
 const EVENTS_URL = 'https://mods.usetopscore.com/api/events';
 const TEAMS_URL = 'https://mods.usetopscore.com/api/teams';
 const GAMES_URL = 'https://mods.usetopscore.com/api/games?order_by=start_date%20desc&min_date=2015-10-29';
 const FIELDS_URL = 'https://mods.usetopscore.com/api/fields';
+
+teamStore.subscribe((teams) => {
+  loadGames();
+});
+
+export function loadGames() {
+  upcomingGames(...teamStore.state).then((games) => {
+    gameStore.dispatch({type: 'SET', games});
+  });
+}
 
 function as_json(response) {
   return response.json();
@@ -44,12 +56,11 @@ function teamsForEvent(event) {
   });
 }
 
-function upcomingGamesForTeam(teamId) {
-  var url = GAMES_URL + `&team_id=${teamId}`;
+function upcomingGames(...teams) {
+  if (teams.length === 0) return;
+  var url = GAMES_URL + teams.map((team) => `&team_id[]=${team.id}`).join('');
   return fetch(url).then(as_json).then((response) => {
-    return Object.keys(response.result).map((gameId) => {
-        return response.result[gameId];
-    });
+    return response.result;
   });
 }
 
