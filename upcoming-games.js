@@ -57,7 +57,7 @@ function teamsForEvent(event) {
 }
 
 function upcomingGames(...teams) {
-  if (teams.length === 0) return;
+  if (teams.length === 0) return new Promise((resolve) => resolve([]));
   var url = GAMES_URL + teams.map((team) => `&team_id[]=${team.id}`).join('');
   return fetch(url).then(as_json).then((response) => {
     return response.result;
