@@ -5,10 +5,11 @@ window.gameStore = gameStore;
 // YYYY-MM-DD is the first 10 chars of a ISO date string.
 let today = new Date().toISOString().slice(0, 10);
 
-const EVENTS_URL = 'https://mods.usetopscore.com/api/events';
-const TEAMS_URL = 'https://mods.usetopscore.com/api/teams';
-const GAMES_URL = `https://mods.usetopscore.com/api/games?order_by=start_date%20asc&min_date=${today}`;
-const FIELDS_URL = 'https://mods.usetopscore.com/api/fields';
+const API_PREFIX = 'https://mods.usetopscore.com/api';
+const EVENTS_URL = `${API_PREFIX}/events`;
+const TEAMS_URL = `${API_PREFIX}/teams`;
+const GAMES_URL = `${API_PREFIX}/games?order_by=start_date%20asc&min_date=${today}&fields[]=Field`;
+const FIELDS_URL = `${API_PREFIX}/fields`;
 
 teamStore.subscribe((teams) => {
   loadGames();
